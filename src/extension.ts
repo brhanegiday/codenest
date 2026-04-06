@@ -2,17 +2,10 @@
 import * as vscode from 'vscode';
 import { StorageManager }    from './storageManager';
 import { DecorationManager } from './decorationManager';
-import { ThreadManager, ISearchIndex } from './threadManager';
+import { ThreadManager }     from './threadManager';
+import { SearchIndex }       from './searchIndex';
 import { AnchorEngine }      from './anchorEngine';
 import { computeFingerprint } from './utils/fingerprint';
-import { Thread } from './types';
-
-// Minimal stub satisfying ISearchIndex until Step 6 wires the real one.
-class StubSearchIndex implements ISearchIndex {
-  rebuild(_threads: Thread[]): void {}
-  upsert(_thread: Thread): void {}
-  remove(_threadId: string): void {}
-}
 
 export function activate(context: vscode.ExtensionContext) {
   // ── 1. Resolve repo root ─────────────────────────────────────────
@@ -24,13 +17,14 @@ export function activate(context: vscode.ExtensionContext) {
   // ── 2. Instantiate modules ────────────────────────────────────────
   const storage     = new StorageManager(repoRoot);
   const decorations = new DecorationManager(context);
-  const searchIndex = new StubSearchIndex();
+  const searchIndex = new SearchIndex();
   const threadMgr   = new ThreadManager(storage, searchIndex, decorations);
 
   context.subscriptions.push(decorations);
 
-  // ── 3. Bootstrap — load threads and decorate open editors ─────────
+  // ── 3. Bootstrap — load threads, populate index, decorate editors ──
   const store = storage.load();
+  searchIndex.rebuild(store.threads);
 
   vscode.window.visibleTextEditors.forEach(editor =>
     decorations.refresh(editor, store.threads)
@@ -55,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
     storage,
     repoRoot,
     updatedThreads => {
-      // After reconciliation: refresh decorations on all open editors
+      searchIndex.rebuild(updatedThreads);
       vscode.window.visibleTextEditors.forEach(editor =>
         decorations.refresh(editor, updatedThreads)
       );

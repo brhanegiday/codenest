@@ -46,7 +46,7 @@
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
-    "test:unit": "pnpm run compile-tests && node node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js --ui tdd out/test/fingerprint.test.js"
+    "test:unit": "pnpm run compile-tests && node node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js --ui tdd out/test/fingerprint.test.js out/test/searchIndex.test.js"
   },
   "devDependencies": {
     "@types/vscode": "^1.110.0",
