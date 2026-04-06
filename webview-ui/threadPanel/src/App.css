@@ -59,8 +59,8 @@ body {
 }
 
 .badge-open     { background: var(--vscode-button-background, #0078d4);           color: var(--vscode-button-foreground, #fff); }
-.badge-resolved { background: var(--vscode-disabledForeground, #6c6c6c);          color: #fff; opacity: 0.85; }
-.badge-orphaned { background: var(--vscode-editorWarning-foreground, #cca700);    color: #1e1e1e; }
+.badge-resolved { background: var(--vscode-disabledForeground, #6c6c6c);          color: var(--vscode-button-foreground, #fff); opacity: 0.85; }
+.badge-orphaned { background: var(--vscode-editorWarning-foreground, #cca700);    color: var(--vscode-editor-background, #1e1e1e); }
 
 /* ── Replies ─────────────────────────────────────────────────────── */
 

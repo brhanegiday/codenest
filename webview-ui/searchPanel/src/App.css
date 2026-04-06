@@ -1,0 +1,93 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background:  var(--vscode-sideBar-background, var(--vscode-editor-background));
+  color:       var(--vscode-sideBar-foreground, var(--vscode-editor-foreground));
+  font-family: var(--vscode-font-family, system-ui, sans-serif);
+  font-size:   var(--vscode-font-size, 13px);
+  line-height: 1.4;
+}
+
+.search-panel { display: flex; flex-direction: column; height: 100vh; }
+
+/* ── Search bar ── */
+.search-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--vscode-panel-border, rgba(128,128,128,0.2));
+}
+.search-icon { color: var(--vscode-descriptionForeground); font-size: 15px; flex-shrink: 0; }
+.search-input {
+  flex: 1; background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground, inherit);
+  border: 1px solid var(--vscode-input-border, transparent);
+  border-radius: 3px; padding: 4px 6px;
+  font-family: inherit; font-size: inherit;
+  outline: none;
+}
+.search-input:focus { border-color: var(--vscode-focusBorder, #007fd4); }
+.clear-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--vscode-descriptionForeground); font-size: 11px; padding: 2px 4px;
+  border-radius: 2px;
+}
+.clear-btn:hover { background: var(--vscode-toolbar-hoverBackground, rgba(128,128,128,0.15)); }
+
+/* ── Filter tabs ── */
+.filter-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--vscode-panel-border, rgba(128,128,128,0.2));
+}
+.tab {
+  flex: 1; padding: 5px 2px;
+  background: none; border: none; cursor: pointer;
+  font-family: inherit; font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+  border-bottom: 2px solid transparent;
+  transition: color 0.1s, border-color 0.1s;
+}
+.tab:hover { color: var(--vscode-editor-foreground); }
+.tab-active {
+  color: var(--vscode-button-background, #0078d4);
+  border-bottom-color: var(--vscode-button-background, #0078d4);
+  font-weight: 600;
+}
+
+/* ── Results ── */
+.results { flex: 1; overflow-y: auto; }
+
+.empty-state {
+  padding: 20px 16px; text-align: center;
+  color: var(--vscode-descriptionForeground); font-size: 12px; line-height: 1.6;
+}
+
+.result-row {
+  padding: 7px 12px 8px; cursor: pointer;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--vscode-panel-border, rgba(128,128,128,0.1));
+  transition: background 0.1s, border-color 0.1s;
+}
+.result-row:hover {
+  background: var(--vscode-list-hoverBackground);
+  border-left-color: var(--vscode-button-background, #0078d4);
+}
+
+.result-top {
+  display: flex; align-items: center; gap: 4px; margin-bottom: 3px; flex-wrap: wrap;
+}
+.file-name { font-weight: 600; font-size: 12px; }
+.line-num { font-size: 11px; color: var(--vscode-descriptionForeground); }
+.result-time { font-size: 10px; color: var(--vscode-descriptionForeground); margin-left: auto; }
+.result-preview {
+  font-size: 12px; color: var(--vscode-descriptionForeground);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── Status badges ── */
+.badge {
+  font-size: 9px; padding: 1px 6px; border-radius: 8px;
+  font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
+}
+.badge-open     { background: var(--vscode-button-background, #0078d4);        color: var(--vscode-button-foreground, #fff); }
+.badge-resolved { background: var(--vscode-disabledForeground, #6c6c6c);       color: var(--vscode-button-foreground, #fff); opacity: 0.8; }
+.badge-orphaned { background: var(--vscode-editorWarning-foreground, #cca700); color: var(--vscode-editor-background, #1e1e1e); }

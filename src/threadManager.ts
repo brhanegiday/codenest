@@ -14,6 +14,9 @@ export interface ISearchIndex {
 }
 
 export class ThreadManager {
+  /** Called after any mutation so the sidebar can refresh itself. */
+  onMutation: (() => void) | undefined;
+
   constructor(
     private storage:     StorageManager,
     private searchIndex: ISearchIndex,
@@ -44,6 +47,7 @@ export class ThreadManager {
     this.storage.save(store);
     this.searchIndex.upsert(thread);
     this.refreshDecorations(anchor.file_path);
+    this.onMutation?.();
     return thread;
   }
 
@@ -63,6 +67,7 @@ export class ThreadManager {
     thread.updated_at = reply.created_at;
     this.storage.save(store);
     this.searchIndex.upsert(thread);
+    this.onMutation?.();
   }
 
   // ── resolve / reopen ──────────────────────────────────────────────
@@ -75,6 +80,7 @@ export class ThreadManager {
     this.storage.save(store);
     this.searchIndex.upsert(thread);
     this.refreshDecorations(thread.anchor.file_path);
+    this.onMutation?.();
   }
 
   // ── soft delete ───────────────────────────────────────────────────
@@ -87,6 +93,7 @@ export class ThreadManager {
     this.storage.save(store);
     this.searchIndex.remove(threadId);
     this.refreshDecorations(thread.anchor.file_path);
+    this.onMutation?.();
   }
 
   // ── re-attach orphan ──────────────────────────────────────────────
@@ -100,6 +107,7 @@ export class ThreadManager {
     this.storage.save(store);
     this.searchIndex.upsert(thread);
     this.refreshDecorations(newAnchor.file_path);
+    this.onMutation?.();
   }
 
   // ── handle messages from any Webview ─────────────────────────────

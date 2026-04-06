@@ -8,7 +8,10 @@
       "Bash(node \"node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js\" --ui tdd out/test/fingerprint.test.js)",
       "Bash(node \"node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js\" --ui tdd \"out/test/fingerprint.test.js\" \"out/test/searchIndex.test.js\")",
       "Bash(npm install:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(node -e ':*)",
+      "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,6\\\\}\" \"c:\\\\Users\\\\brhan\\\\OneDrive\\\\Documents\\\\Works\\\\codenest\\\\webview-ui\\\\threadPanel\\\\src\\\\App.css\" \"c:\\\\Users\\\\brhan\\\\OneDrive\\\\Documents\\\\Works\\\\codenest\\\\webview-ui\\\\sidebarView\\\\src\\\\App.css\" \"c:\\\\Users\\\\brhan\\\\OneDrive\\\\Documents\\\\Works\\\\codenest\\\\webview-ui\\\\searchPanel\\\\src\\\\App.css\")",
+      "Bash(node \"node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js\" --ui tdd out/test/fingerprint.test.js out/test/searchIndex.test.js)"
     ]
   }
 }
