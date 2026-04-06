@@ -11,7 +11,13 @@
       "Bash(npm run:*)",
       "Bash(node -e ':*)",
       "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,6\\\\}\" \"c:\\\\Users\\\\brhan\\\\OneDrive\\\\Documents\\\\Works\\\\codenest\\\\webview-ui\\\\threadPanel\\\\src\\\\App.css\" \"c:\\\\Users\\\\brhan\\\\OneDrive\\\\Documents\\\\Works\\\\codenest\\\\webview-ui\\\\sidebarView\\\\src\\\\App.css\" \"c:\\\\Users\\\\brhan\\\\OneDrive\\\\Documents\\\\Works\\\\codenest\\\\webview-ui\\\\searchPanel\\\\src\\\\App.css\")",
-      "Bash(node \"node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js\" --ui tdd out/test/fingerprint.test.js out/test/searchIndex.test.js)"
+      "Bash(node \"node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js\" --ui tdd out/test/fingerprint.test.js out/test/searchIndex.test.js)",
+      "Bash(pnpm run:*)",
+      "Bash(npx @vscode/vsce package --no-dependencies)",
+      "Bash(ls \"/c/Users/brhan/OneDrive/Documents/Works/codenest/\"*.vsix)",
+      "Bash(code --install-extension \"/c/Users/brhan/OneDrive/Documents/Works/codenest/codenest-0.1.0.vsix\")",
+      "Bash(code --help)",
+      "Bash(\"/c/Users/brhan/AppData/Local/Programs/Microsoft VS Code/bin/code\" --install-extension \"/c/Users/brhan/OneDrive/Documents/Works/codenest/codenest-0.1.0.vsix\")"
     ]
   }
 }

@@ -1,128 +1,156 @@
 {
-  "name": "codenest",
-  "displayName": "codenest",
-  "description": "",
-  "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.110.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": ["onStartupFinished"],
-  "main": "./dist/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "codenest.createThread",
-        "title": "CodeNest: Add thread"
-      },
-      {
-        "command": "codenest.searchThreads",
-        "title": "CodeNest: Search threads"
-      }
-    ],
-    "menus": {
-      "editor/context": [
-        {
-          "command": "codenest.createThread",
-          "when": "editorHasSelection",
-          "group": "codenest"
-        }
-      ]
+    "name": "codenest",
+    "displayName": "CodeNest",
+    "description": "Attach persistent discussion threads to lines of code. Local-first, no accounts, no cloud.",
+    "version": "0.1.0",
+    "publisher": "brhanegiday",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/brhanegiday/codenest"
     },
-    "keybindings": [
-      {
-        "command": "codenest.createThread",
-        "key": "ctrl+shift+n",
-        "mac": "cmd+shift+n",
-        "when": "editorHasSelection"
-      }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "codenest-sidebar",
-          "title": "CodeNest",
-          "icon": "media/codenest-icon.svg"
-        }
-      ]
+    "bugs": {
+        "url": "https://github.com/brhanegiday/codenest/issues"
     },
-    "views": {
-      "codenest-sidebar": [
-        {
-          "id": "codenest.sidebarView",
-          "name": "Threads",
-          "type": "webview"
+    "homepage": "https://github.com/brhanegiday/codenest#readme",
+    "icon": "media/codenest-marketplace-icon.png",
+    "galleryBanner": {
+        "color": "#1A56DB",
+        "theme": "dark"
+    },
+    "keywords": [
+        "threads",
+        "comments",
+        "annotations",
+        "notes",
+        "knowledge",
+        "documentation",
+        "collaboration",
+        "review"
+    ],
+    "engines": {
+        "vscode": "^1.110.0"
+    },
+    "categories": [
+        "Other",
+        "Notebooks"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "codenest.createThread",
+                "title": "CodeNest: Add thread"
+            },
+            {
+                "command": "codenest.searchThreads",
+                "title": "CodeNest: Search threads"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "codenest.createThread",
+                    "when": "editorHasSelection",
+                    "group": "codenest"
+                }
+            ]
         },
-        {
-          "id": "codenest.searchView",
-          "name": "Search",
-          "type": "webview"
-        }
-      ]
-    },
-    "walkthroughs": [
-      {
-        "id": "codenest.gettingStarted",
-        "title": "Get started with CodeNest",
-        "description": "Turn code decisions into permanent knowledge",
-        "steps": [
-          {
-            "id": "createFirstThread",
-            "title": "Create your first thread",
-            "description": "Select any lines of code, then press Cmd+Shift+N (or Ctrl+Shift+N on Windows), or right-click → Add CodeNest thread. Write a note about why that code is written the way it is.\n[Add a thread now](command:codenest.createThread)",
-            "media": {
-              "image": "media/walkthrough-create.png",
-              "altText": "Selecting code and creating a CodeNest thread"
+        "keybindings": [
+            {
+                "command": "codenest.createThread",
+                "key": "ctrl+shift+n",
+                "mac": "cmd+shift+n",
+                "when": "editorHasSelection"
             }
-          },
-          {
-            "id": "searchThreads",
-            "title": "Search your knowledge base",
-            "description": "Every thread is instantly searchable. Open the CodeNest sidebar and try searching for a keyword from any note you've written.\n[Open search](command:codenest.searchThreads)",
-            "media": {
-              "image": "media/walkthrough-search.png",
-              "altText": "Searching threads in the CodeNest sidebar"
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "codenest-sidebar",
+                    "title": "CodeNest",
+                    "icon": "media/codenest-icon.svg"
+                }
+            ]
+        },
+        "views": {
+            "codenest-sidebar": [
+                {
+                    "id": "codenest.sidebarView",
+                    "name": "Threads",
+                    "type": "webview"
+                },
+                {
+                    "id": "codenest.searchView",
+                    "name": "Search",
+                    "type": "webview"
+                }
+            ]
+        },
+        "walkthroughs": [
+            {
+                "id": "codenest.gettingStarted",
+                "title": "Get started with CodeNest",
+                "description": "Turn code decisions into permanent knowledge",
+                "steps": [
+                    {
+                        "id": "createFirstThread",
+                        "title": "Create your first thread",
+                        "description": "Select any lines of code, then press Cmd+Shift+N (or Ctrl+Shift+N on Windows), or right-click → Add CodeNest thread. Write a note about why that code is written the way it is.\n[Add a thread now](command:codenest.createThread)",
+                        "media": {
+                            "image": "media/walkthrough-create.png",
+                            "altText": "Selecting code and creating a CodeNest thread"
+                        }
+                    },
+                    {
+                        "id": "searchThreads",
+                        "title": "Search your knowledge base",
+                        "description": "Every thread is instantly searchable. Open the CodeNest sidebar and try searching for a keyword from any note you've written.\n[Open search](command:codenest.searchThreads)",
+                        "media": {
+                            "image": "media/walkthrough-search.png",
+                            "altText": "Searching threads in the CodeNest sidebar"
+                        }
+                    },
+                    {
+                        "id": "resolveThread",
+                        "title": "Resolve threads when done",
+                        "description": "Click any gutter icon to open the thread, then click Resolve when the discussion is complete. Resolved threads stay searchable forever — they are never deleted.",
+                        "media": {
+                            "image": "media/walkthrough-resolve.png",
+                            "altText": "Resolving a CodeNest thread"
+                        }
+                    }
+                ]
             }
-          },
-          {
-            "id": "resolveThread",
-            "title": "Resolve threads when done",
-            "description": "Click any gutter icon to open the thread, then click Resolve when the discussion is complete. Resolved threads stay searchable forever — they are never deleted.",
-            "media": {
-              "image": "media/walkthrough-resolve.png",
-              "altText": "Resolving a CodeNest thread"
-            }
-          }
         ]
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "pnpm run build:webview && pnpm run package",
-    "build:webview": "cd webview-ui/threadPanel && npm install && npm run build && cd ../sidebarView && npm install && npm run build && cd ../searchPanel && npm install && npm run build",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test",
-    "test:unit": "pnpm run compile-tests && node node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js --ui tdd out/test/fingerprint.test.js out/test/searchIndex.test.js"
-  },
-  "devDependencies": {
-    "@types/vscode": "^1.110.0",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
-    "typescript-eslint": "^8.56.1",
-    "eslint": "^9.39.3",
-    "typescript": "^5.9.3",
-    "ts-loader": "^9.5.4",
-    "webpack": "^5.105.3",
-    "webpack-cli": "^6.0.1",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
-  }
+    },
+    "scripts": {
+        "vscode:prepublish": "pnpm run build:webview && pnpm run package",
+        "build:webview": "cd webview-ui/threadPanel && npm install && npm run build && cd ../sidebarView && npm install && npm run build && cd ../searchPanel && npm install && npm run build",
+        "compile": "webpack",
+        "watch": "webpack --watch",
+        "package": "webpack --mode production --devtool hidden-source-map",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+        "lint": "eslint src",
+        "test": "vscode-test",
+        "test:unit": "pnpm run compile-tests && node node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js --ui tdd out/test/fingerprint.test.js out/test/searchIndex.test.js"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.110.0",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "22.x",
+        "typescript-eslint": "^8.56.1",
+        "eslint": "^9.39.3",
+        "typescript": "^5.9.3",
+        "ts-loader": "^9.5.4",
+        "webpack": "^5.105.3",
+        "webpack-cli": "^6.0.1",
+        "@vscode/test-cli": "^0.0.12",
+        "@vscode/test-electron": "^2.5.2"
+    }
 }

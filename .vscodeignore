@@ -1,14 +1,33 @@
+# Dev tooling
 .vscode/**
 .vscode-test/**
-out/**
-node_modules/**
-src/**
-.gitignore
-.yarnrc
+.github/**
+.eslintrc*
+eslint.config.mjs
+tsconfig.json
 webpack.config.js
 vsc-extension-quickstart.md
-**/tsconfig.json
-**/eslint.config.mjs
+pnpm-lock.yaml
+.yarnrc
+.gitignore
+
+# Source — compiled artefacts are in dist/ and out/
+src/**
+webview-ui/**/src/**
+webview-ui/**/node_modules/**
+webview-ui/**/vite.config.*
+webview-ui/**/tsconfig*.json
+webview-ui/**/package-lock.json
+
+# Tests and maps
+out/test/**
 **/*.map
-**/*.ts
+**/*.tsbuildinfo
+**/*.test.ts
 **/.vscode-test.*
+
+# Docs
+docs/**
+
+# Dependencies
+node_modules/**
