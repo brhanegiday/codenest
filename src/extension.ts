@@ -3,7 +3,8 @@ import * as vscode from 'vscode';
 import { StorageManager }    from './storageManager';
 import { DecorationManager } from './decorationManager';
 import { ThreadManager, ISearchIndex } from './threadManager';
-import { computeFingerprint }  from './utils/fingerprint';
+import { AnchorEngine }      from './anchorEngine';
+import { computeFingerprint } from './utils/fingerprint';
 import { Thread } from './types';
 
 // Minimal stub satisfying ISearchIndex until Step 6 wires the real one.
@@ -49,7 +50,20 @@ export function activate(context: vscode.ExtensionContext) {
     }),
   );
 
-  // ── 5. Register commands ──────────────────────────────────────────
+  // ── 5. Anchor Engine ──────────────────────────────────────────────
+  const anchorEngine = new AnchorEngine(
+    storage,
+    repoRoot,
+    updatedThreads => {
+      // After reconciliation: refresh decorations on all open editors
+      vscode.window.visibleTextEditors.forEach(editor =>
+        decorations.refresh(editor, updatedThreads)
+      );
+    },
+  );
+  anchorEngine.registerListeners(context);
+
+  // ── 6. Register commands ──────────────────────────────────────────
   context.subscriptions.push(
     vscode.commands.registerCommand('codenest.createThread', () => {
       const editor = vscode.window.activeTextEditor;
