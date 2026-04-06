@@ -7,12 +7,12 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/brhanegiday/codenest"
+        "url": "https://github.com/brhanegiday/CodeNest"
     },
     "bugs": {
-        "url": "https://github.com/brhanegiday/codenest/issues"
+        "url": "https://github.com/brhanegiday/CodeNest/issues"
     },
-    "homepage": "https://github.com/brhanegiday/codenest#readme",
+    "homepage": "https://github.com/brhanegiday/CodeNest#readme",
     "icon": "media/codenest-marketplace-icon.png",
     "galleryBanner": {
         "color": "#1A56DB",
