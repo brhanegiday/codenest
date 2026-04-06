@@ -9,13 +9,30 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": ["onStartupFinished"],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "codenest.helloWorld",
-        "title": "Hello World"
+        "command": "codenest.createThread",
+        "title": "CodeNest: Add thread"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "codenest.createThread",
+          "when": "editorHasSelection",
+          "group": "codenest"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "codenest.createThread",
+        "key": "ctrl+shift+n",
+        "mac": "cmd+shift+n",
+        "when": "editorHasSelection"
       }
     ]
   },
@@ -28,7 +45,8 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "test:unit": "pnpm run compile-tests && node node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js --ui tdd out/test/fingerprint.test.js"
   },
   "devDependencies": {
     "@types/vscode": "^1.110.0",

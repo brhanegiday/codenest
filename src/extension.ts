@@ -1,26 +1,86 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+// src/extension.ts
 import * as vscode from 'vscode';
+import { StorageManager }    from './storageManager';
+import { DecorationManager } from './decorationManager';
+import { ThreadManager, ISearchIndex } from './threadManager';
+import { computeFingerprint }  from './utils/fingerprint';
+import { Thread } from './types';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "codenest" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('codenest.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from codenest!');
-	});
-
-	context.subscriptions.push(disposable);
+// Minimal stub satisfying ISearchIndex until Step 6 wires the real one.
+class StubSearchIndex implements ISearchIndex {
+  rebuild(_threads: Thread[]): void {}
+  upsert(_thread: Thread): void {}
+  remove(_threadId: string): void {}
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+export function activate(context: vscode.ExtensionContext) {
+  // ── 1. Resolve repo root ─────────────────────────────────────────
+  const repoRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  if (!repoRoot) {
+    return;   // No workspace open — extension stays dormant
+  }
+
+  // ── 2. Instantiate modules ────────────────────────────────────────
+  const storage     = new StorageManager(repoRoot);
+  const decorations = new DecorationManager(context);
+  const searchIndex = new StubSearchIndex();
+  const threadMgr   = new ThreadManager(storage, searchIndex, decorations);
+
+  context.subscriptions.push(decorations);
+
+  // ── 3. Bootstrap — load threads and decorate open editors ─────────
+  const store = storage.load();
+
+  vscode.window.visibleTextEditors.forEach(editor =>
+    decorations.refresh(editor, store.threads)
+  );
+
+  // ── 4. Refresh on every editor change ────────────────────────────
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(editor => {
+      if (editor) {
+        decorations.refresh(editor, storage.load().threads);
+      }
+    }),
+    vscode.window.onDidChangeVisibleTextEditors(editors => {
+      editors.forEach(editor =>
+        decorations.refresh(editor, storage.load().threads)
+      );
+    }),
+  );
+
+  // ── 5. Register commands ──────────────────────────────────────────
+  context.subscriptions.push(
+    vscode.commands.registerCommand('codenest.createThread', () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor || editor.selection.isEmpty) {
+        vscode.window.showInformationMessage(
+          'CodeNest: Select some code first, then add a thread.'
+        );
+        return;
+      }
+
+      const doc       = editor.document;
+      const sel       = editor.selection;
+      const fileLines = doc.getText().split('\n');
+      const lineStart = sel.start.line + 1;   // 1-indexed
+      const lineEnd   = sel.end.line   + 1;
+
+      const anchor = {
+        file_path:     vscode.workspace.asRelativePath(doc.fileName),
+        line_start:    lineStart,
+        line_end:      lineEnd,
+        fingerprint:   computeFingerprint(fileLines, lineStart, lineEnd),
+        anchored_code: doc.getText(sel),
+      };
+
+      const thread = threadMgr.createThread(anchor, 'Test thread');
+
+      vscode.window.showInformationMessage(
+        `CodeNest: Thread created on line ${lineStart} (id: ${thread.id.slice(0, 8)}…)`
+      );
+    }),
+  );
+}
+
+export function deactivate(): void {}
