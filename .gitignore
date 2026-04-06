@@ -5,5 +5,8 @@ node_modules
 *.vsix
 
 .codenest*
+.claude*
+*.log
+*.tsbuildinfo
 
 docs/
