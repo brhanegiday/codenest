@@ -114,6 +114,11 @@ export class ThreadManager {
     }
   }
 
+  // ── read helpers (used by webview providers) ──────────────────────
+  getThread(threadId: string): Thread | undefined {
+    return this.storage.load().threads.find(t => t.id === threadId);
+  }
+
   // ── helpers ───────────────────────────────────────────────────────
   private refreshDecorations(filePath: string): void {
     const store = this.storage.load();

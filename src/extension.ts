@@ -1,11 +1,12 @@
 // src/extension.ts
 import * as vscode from 'vscode';
-import { StorageManager }    from './storageManager';
-import { DecorationManager } from './decorationManager';
-import { ThreadManager }     from './threadManager';
-import { SearchIndex }       from './searchIndex';
-import { AnchorEngine }      from './anchorEngine';
-import { computeFingerprint } from './utils/fingerprint';
+import { StorageManager }      from './storageManager';
+import { DecorationManager }   from './decorationManager';
+import { ThreadManager }       from './threadManager';
+import { SearchIndex }         from './searchIndex';
+import { AnchorEngine }        from './anchorEngine';
+import { ThreadPanelProvider } from './webviews/threadPanel';
+import { computeFingerprint }  from './utils/fingerprint';
 
 export function activate(context: vscode.ExtensionContext) {
   // ── 1. Resolve repo root ─────────────────────────────────────────
@@ -57,13 +58,13 @@ export function activate(context: vscode.ExtensionContext) {
   );
   anchorEngine.registerListeners(context);
 
-  // ── 6. Register commands ──────────────────────────────────────────
+  // ── 6. Commands ───────────────────────────────────────────────────
   context.subscriptions.push(
     vscode.commands.registerCommand('codenest.createThread', () => {
       const editor = vscode.window.activeTextEditor;
-      if (!editor || editor.selection.isEmpty) {
+      if (!editor) {
         vscode.window.showInformationMessage(
-          'CodeNest: Select some code first, then add a thread.'
+          'CodeNest: Open a file first.'
         );
         return;
       }
@@ -71,22 +72,42 @@ export function activate(context: vscode.ExtensionContext) {
       const doc       = editor.document;
       const sel       = editor.selection;
       const fileLines = doc.getText().split('\n');
+      const filePath  = vscode.workspace.asRelativePath(doc.fileName);
+
+      // Use current line when nothing is selected
       const lineStart = sel.start.line + 1;   // 1-indexed
-      const lineEnd   = sel.end.line   + 1;
+      const lineEnd   = sel.isEmpty
+        ? lineStart
+        : sel.end.line + 1;
+
+      // If a thread is already anchored to this line, open it for viewing
+      const currentStore = storage.load();
+      const existing = currentStore.threads.find(
+        t => t.anchor.file_path === filePath
+          && t.anchor.line_start <= lineStart
+          && t.anchor.line_end   >= lineStart
+          && !t.deleted_at,
+      );
 
       const anchor = {
-        file_path:     vscode.workspace.asRelativePath(doc.fileName),
+        file_path:     filePath,
         line_start:    lineStart,
         line_end:      lineEnd,
         fingerprint:   computeFingerprint(fileLines, lineStart, lineEnd),
-        anchored_code: doc.getText(sel),
+        anchored_code: sel.isEmpty ? '' : doc.getText(sel),
       };
 
-      const thread = threadMgr.createThread(anchor, 'Test thread');
-
-      vscode.window.showInformationMessage(
-        `CodeNest: Thread created on line ${lineStart} (id: ${thread.id.slice(0, 8)}…)`
-      );
+      if (existing) {
+        ThreadPanelProvider.open(context, existing.anchor, threadMgr, existing);
+      } else {
+        if (sel.isEmpty) {
+          vscode.window.showInformationMessage(
+            'CodeNest: Select some code first, then press Ctrl+Shift+N to add a thread.'
+          );
+          return;
+        }
+        ThreadPanelProvider.open(context, anchor, threadMgr);
+      }
     }),
   );
 }

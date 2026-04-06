@@ -6,7 +6,9 @@
       "Bash(node_modules/@vscode/test-cli/node_modules/.bin/mocha out/test/fingerprint.test.js)",
       "Bash(node \"node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js\" out/test/fingerprint.test.js)",
       "Bash(node \"node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js\" --ui tdd out/test/fingerprint.test.js)",
-      "Bash(node \"node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js\" --ui tdd \"out/test/fingerprint.test.js\" \"out/test/searchIndex.test.js\")"
+      "Bash(node \"node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js\" --ui tdd \"out/test/fingerprint.test.js\" \"out/test/searchIndex.test.js\")",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)"
     ]
   }
 }
