@@ -10,6 +10,8 @@ vsc-extension-quickstart.md
 pnpm-lock.yaml
 .yarnrc
 .gitignore
+.claude/**
+*.vsix
 
 # Source — compiled artefacts are in dist/ and out/
 src/**

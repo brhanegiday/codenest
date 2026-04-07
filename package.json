@@ -1,6 +1,6 @@
 {
     "name": "codenest",
-    "displayName": "CodeNest",
+    "displayName": "CodeNest Threads",
     "description": "Attach persistent discussion threads to lines of code. Local-first, no accounts, no cloud.",
     "version": "0.1.0",
     "publisher": "brhanegiday",
@@ -138,19 +138,21 @@
         "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
         "lint": "eslint src",
         "test": "vscode-test",
-        "test:unit": "pnpm run compile-tests && node node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js --ui tdd out/test/fingerprint.test.js out/test/searchIndex.test.js"
+        "test:unit": "pnpm run compile-tests && node node_modules/.pnpm/mocha@11.7.5/node_modules/mocha/bin/mocha.js --ui tdd out/test/fingerprint.test.js out/test/searchIndex.test.js",
+    "publish:marketplace": "vsce publish --no-dependencies"
     },
     "devDependencies": {
-        "@types/vscode": "^1.110.0",
         "@types/mocha": "^10.0.10",
         "@types/node": "22.x",
-        "typescript-eslint": "^8.56.1",
-        "eslint": "^9.39.3",
-        "typescript": "^5.9.3",
-        "ts-loader": "^9.5.4",
-        "webpack": "^5.105.3",
-        "webpack-cli": "^6.0.1",
+        "@types/vscode": "^1.110.0",
         "@vscode/test-cli": "^0.0.12",
-        "@vscode/test-electron": "^2.5.2"
+        "@vscode/test-electron": "^2.5.2",
+        "@vscode/vsce": "^3.7.1",
+        "eslint": "^9.39.3",
+        "ts-loader": "^9.5.4",
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.56.1",
+        "webpack": "^5.105.3",
+        "webpack-cli": "^6.0.1"
     }
 }
