@@ -1,18 +1,18 @@
 {
-    "name": "codenest",
-    "displayName": "CodeNest Threads",
-    "description": "Attach persistent discussion threads to lines of code. Local-first, no accounts, no cloud.",
+    "name": "brana",
+    "displayName": "Brana",
+    "description": "The parchment for your code — permanent, searchable knowledge anchored to every line.",
     "version": "0.1.0",
     "publisher": "brhanegiday",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/brhanegiday/CodeNest"
+        "url": "https://github.com/brhanegiday/brana"
     },
     "bugs": {
-        "url": "https://github.com/brhanegiday/CodeNest/issues"
+        "url": "https://github.com/brhanegiday/brana/issues"
     },
-    "homepage": "https://github.com/brhanegiday/CodeNest#readme",
+    "homepage": "https://github.com/brhanegiday/brana#readme",
     "icon": "media/codenest-marketplace-icon.png",
     "galleryBanner": {
         "color": "#1A56DB",
@@ -42,26 +42,26 @@
     "contributes": {
         "commands": [
             {
-                "command": "codenest.createThread",
-                "title": "CodeNest: Add thread"
+                "command": "brana.createThread",
+                "title": "Brana: Add thread"
             },
             {
-                "command": "codenest.searchThreads",
-                "title": "CodeNest: Search threads"
+                "command": "brana.searchThreads",
+                "title": "Brana: Search threads"
             }
         ],
         "menus": {
             "editor/context": [
                 {
-                    "command": "codenest.createThread",
+                    "command": "brana.createThread",
                     "when": "editorHasSelection",
-                    "group": "codenest"
+                    "group": "brana"
                 }
             ]
         },
         "keybindings": [
             {
-                "command": "codenest.createThread",
+                "command": "brana.createThread",
                 "key": "ctrl+shift+n",
                 "mac": "cmd+shift+n",
                 "when": "editorHasSelection"
@@ -70,21 +70,21 @@
         "viewsContainers": {
             "activitybar": [
                 {
-                    "id": "codenest-sidebar",
-                    "title": "CodeNest",
+                    "id": "brana-sidebar",
+                    "title": "Brana",
                     "icon": "media/codenest-icon.svg"
                 }
             ]
         },
         "views": {
-            "codenest-sidebar": [
+            "brana-sidebar": [
                 {
-                    "id": "codenest.sidebarView",
+                    "id": "brana.sidebarView",
                     "name": "Threads",
                     "type": "webview"
                 },
                 {
-                    "id": "codenest.searchView",
+                    "id": "brana.searchView",
                     "name": "Search",
                     "type": "webview"
                 }
@@ -92,26 +92,26 @@
         },
         "walkthroughs": [
             {
-                "id": "codenest.gettingStarted",
-                "title": "Get started with CodeNest",
+                "id": "brana.gettingStarted",
+                "title": "Get started with Brana",
                 "description": "Turn code decisions into permanent knowledge",
                 "steps": [
                     {
                         "id": "createFirstThread",
                         "title": "Create your first thread",
-                        "description": "Select any lines of code, then press Cmd+Shift+N (or Ctrl+Shift+N on Windows), or right-click → Add CodeNest thread. Write a note about why that code is written the way it is.\n[Add a thread now](command:codenest.createThread)",
+                        "description": "Select any lines of code, then press Cmd+Shift+N (or Ctrl+Shift+N on Windows), or right-click → Add Brana thread. Write a note about why that code is written the way it is.\n[Add a thread now](command:brana.createThread)",
                         "media": {
                             "image": "media/walkthrough-create.png",
-                            "altText": "Selecting code and creating a CodeNest thread"
+                            "altText": "Selecting code and creating a Brana thread"
                         }
                     },
                     {
                         "id": "searchThreads",
                         "title": "Search your knowledge base",
-                        "description": "Every thread is instantly searchable. Open the CodeNest sidebar and try searching for a keyword from any note you've written.\n[Open search](command:codenest.searchThreads)",
+                        "description": "Every thread is instantly searchable. Open the Brana sidebar and try searching for a keyword from any note you've written.\n[Open search](command:brana.searchThreads)",
                         "media": {
                             "image": "media/walkthrough-search.png",
-                            "altText": "Searching threads in the CodeNest sidebar"
+                            "altText": "Searching threads in the Brana sidebar"
                         }
                     },
                     {
@@ -120,7 +120,7 @@
                         "description": "Click any gutter icon to open the thread, then click Resolve when the discussion is complete. Resolved threads stay searchable forever — they are never deleted.",
                         "media": {
                             "image": "media/walkthrough-resolve.png",
-                            "altText": "Resolving a CodeNest thread"
+                            "altText": "Resolving a Brana thread"
                         }
                     }
                 ]

@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
           fontSize: '13px',
           lineHeight: '1.5',
         }}>
-          <strong>CodeNest: Something went wrong</strong>
+          <strong>Brana: Something went wrong</strong>
           <pre style={{
             marginTop: '8px',
             fontSize: '11px',

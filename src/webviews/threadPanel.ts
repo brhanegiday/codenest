@@ -18,8 +18,8 @@ export class ThreadPanelProvider {
     existingThread?: Thread,
   ): void {
     const panel = vscode.window.createWebviewPanel(
-      'codenest.threadPanel',
-      existingThread ? 'CodeNest Thread' : 'CodeNest: New Thread',
+      'brana.threadPanel',
+      existingThread ? 'Brana Thread' : 'Brana: New Thread',
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: false },
       {
         enableScripts: true,
@@ -112,7 +112,7 @@ export class ThreadPanelProvider {
     const scriptPath = path.join(assetsDir, 'index.js');
     if (!fs.existsSync(scriptPath)) {
       return `<!DOCTYPE html><html><body style="color:#f48771;padding:16px">
-        <strong>CodeNest:</strong> webview assets not found.<br>
+        <strong>Brana:</strong> webview assets not found.<br>
         Run <code>pnpm run build:webview</code> then reload.
       </body></html>`;
     }
@@ -132,7 +132,7 @@ export class ThreadPanelProvider {
              style-src ${webview.cspSource} 'unsafe-inline';
              script-src ${webview.cspSource};" />
   <link rel="stylesheet" href="${styleUri}" />
-  <title>CodeNest Thread</title>
+  <title>Brana Thread</title>
 </head>
 <body>
   <div id="root"></div>

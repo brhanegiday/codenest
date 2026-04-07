@@ -6,7 +6,7 @@ import * as crypto from "node:crypto";
 import { ThreadStore } from "./types";
 
 const SCHEMA_VERSION = 1;
-const STORE_DIR = ".codenest";
+const STORE_DIR = ".brana";
 const STORE_FILE = "threads.json";
 
 export class StorageManager {
@@ -31,7 +31,7 @@ export class StorageManager {
             // Corrupted file — show recovery prompt, return empty
             vscode.window
                 .showErrorMessage(
-                    "CodeNest: threads.json is corrupted. " + "Your threads may be unreadable.",
+                    "Brana: threads.json is corrupted. " + "Your threads may be unreadable.",
                     "Reset store",
                 )
                 .then((action) => {
@@ -58,10 +58,10 @@ export class StorageManager {
     // ── gitignore guard ───────────────────────────────────────────────
     private ensureGitignore(): void {
         const gi = path.join(this.repoRoot, ".gitignore");
-        const entry = ".codenest/";
+        const entry = ".brana/";
         if (!fs.existsSync(gi) || !fs.readFileSync(gi, "utf-8").includes(entry)) {
-            fs.appendFileSync(gi, "\n# CodeNest private threads\n" + entry + "\n");
-            vscode.window.showInformationMessage("CodeNest: Added .codenest/ to .gitignore to keep threads private.");
+            fs.appendFileSync(gi, "\n# Brana private threads\n" + entry + "\n");
+            vscode.window.showInformationMessage("Brana: Added .brana/ to .gitignore to keep threads private.");
         }
     }
 

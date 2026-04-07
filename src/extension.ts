@@ -24,14 +24,14 @@ async function navigateToThread(thread: Thread, repoRoot: string): Promise<void>
     editor.selection = new vscode.Selection(line, 0, line, 0);
   } catch {
     vscode.window.showWarningMessage(
-      `CodeNest: Could not open ${thread.anchor.file_path}`,
+      `Brana: Could not open ${thread.anchor.file_path}`,
     );
   }
 }
 
 export function activate(context: vscode.ExtensionContext) {
   // ── 0. Output channel for diagnostics ────────────────────────────
-  const outputChannel = vscode.window.createOutputChannel('CodeNest');
+  const outputChannel = vscode.window.createOutputChannel('Brana');
   context.subscriptions.push(outputChannel);
 
   // ── 1. Resolve repo root ─────────────────────────────────────────
@@ -83,7 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
     (threadId) => {
       pendingReattachId = threadId;
       vscode.window.showInformationMessage(
-        'CodeNest: Select the new anchor code in the editor, then press Ctrl+Shift+N (or Cmd+Shift+N).',
+        'Brana: Select the new anchor code in the editor, then press Ctrl+Shift+N (or Cmd+Shift+N).',
       );
     },
     (thread) => navigateToThread(thread, repoRoot),
@@ -95,8 +95,8 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('codenest.sidebarView', sidebarProvider),
-    vscode.window.registerWebviewViewProvider('codenest.searchView',  searchProvider),
+    vscode.window.registerWebviewViewProvider('brana.sidebarView', sidebarProvider),
+    vscode.window.registerWebviewViewProvider('brana.searchView',  searchProvider),
   );
 
   // Wire sidebar refresh to every thread mutation
@@ -104,13 +104,13 @@ export function activate(context: vscode.ExtensionContext) {
 
   // ── 8. Commands ───────────────────────────────────────────────────
   context.subscriptions.push(
-    vscode.commands.registerCommand('codenest.searchThreads', () => {
-      vscode.commands.executeCommand('codenest.searchView.focus');
+    vscode.commands.registerCommand('brana.searchThreads', () => {
+      vscode.commands.executeCommand('brana.searchView.focus');
     }),
-    vscode.commands.registerCommand('codenest.createThread', () => {
+    vscode.commands.registerCommand('brana.createThread', () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
-        vscode.window.showInformationMessage('CodeNest: Open a file first.');
+        vscode.window.showInformationMessage('Brana: Open a file first.');
         return;
       }
 
@@ -125,7 +125,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (pendingReattachId) {
         if (sel.isEmpty) {
           vscode.window.showInformationMessage(
-            'CodeNest: Select the new anchor code first, then press Ctrl+Shift+N.',
+            'Brana: Select the new anchor code first, then press Ctrl+Shift+N.',
           );
           return;
         }
@@ -138,7 +138,7 @@ export function activate(context: vscode.ExtensionContext) {
         };
         threadMgr.reattachThread(pendingReattachId, newAnchor);
         pendingReattachId = null;
-        vscode.window.showInformationMessage('CodeNest: Thread re-attached.');
+        vscode.window.showInformationMessage('Brana: Thread re-attached.');
         return;
       }
 
@@ -164,7 +164,7 @@ export function activate(context: vscode.ExtensionContext) {
       } else {
         if (sel.isEmpty) {
           vscode.window.showInformationMessage(
-            'CodeNest: Select some code first, then press Ctrl+Shift+N.',
+            'Brana: Select some code first, then press Ctrl+Shift+N.',
           );
           return;
         }

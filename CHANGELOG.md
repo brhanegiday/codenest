@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to CodeNest will be documented in this file.
+All notable changes to Brana will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
@@ -17,4 +17,4 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Sidebar view** — Activity Bar panel showing threads grouped by Open / Resolved / Orphaned with collapse, navigation, and hide-resolved toggle.
 - **Search panel** — full-text search across thread body, replies, anchored code, and file paths with AND logic, case-insensitive matching, and status filter tabs.
 - **Walkthrough** — three-step onboarding walkthrough accessible from the VS Code Welcome tab.
-- **Local-first storage** — all data persisted in `.codenest/threads.json` with atomic writes (`.tmp` + rename). No network requests, no telemetry.
+- **Local-first storage** — all data persisted in `.brana/threads.json` with atomic writes (`.tmp` + rename). No network requests, no telemetry.
