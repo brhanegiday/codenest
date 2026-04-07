@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 
-// ── Types (mirror of src/types/index.ts — keep in sync) ──────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 type ThreadStatus = 'open' | 'resolved' | 'orphaned';
 
 interface ThreadAnchor {
@@ -38,14 +38,14 @@ type HostMessage =
 type WebviewMessage =
   | { type: 'createThread'; anchor: ThreadAnchor; body: string }
   | { type: 'addReply';     threadId: string; body: string }
+  | { type: 'editReply';    threadId: string; replyId: string; body: string }
   | { type: 'resolveThread'; threadId: string }
   | { type: 'deleteThread'; threadId: string }
   | { type: 'cancelThread' };
 
-// ── VS Code API ────────────────────────────────────────────────────────────────
+// ── VS Code API ───────────────────────────────────────────────────────────────
 declare function acquireVsCodeApi(): { postMessage(msg: unknown): void };
 const vscode = acquireVsCodeApi();
-
 function post(msg: WebviewMessage) { vscode.postMessage(msg); }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -60,65 +60,177 @@ function relativeTime(iso: string): string {
 }
 
 function escapeHtml(s: string): string {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function renderMarkdown(text: string): { __html: string } {
   const escaped = escapeHtml(text);
   const html = escaped
-    // code fences
     .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-    // inline code
     .replace(/`([^`]+)`/g, '<code>$1</code>')
-    // bold
     .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
-    // italic
     .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
-    // newlines (outside pre blocks — rough but good enough for v0.1)
     .replace(/\n/g, '<br>');
   return { __html: html };
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+function basename(p: string): string {
+  return p.split('/').pop() ?? p;
+}
+
+// ── Icons (inline SVG) ────────────────────────────────────────────────────────
+const EditIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M13.23 1a1.82 1.82 0 0 1 1.29.54 1.82 1.82 0 0 1 0 2.58L5.3 13.34l-3.65.81.81-3.65L11.65 1.54A1.82 1.82 0 0 1 13.23 1zm0 1.18a.64.64 0 0 0-.45.19L3.7 11.43l-.41 1.87 1.87-.41L14.23 3.82a.64.64 0 0 0 0-.9.64.64 0 0 0-.45-.18l-.55-.54z"/>
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M6.5 1h3a.5.5 0 0 1 .5.5V2h3a.5.5 0 0 1 0 1h-.5v10a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 2.5 13V3H2a.5.5 0 0 1 0-1h3V1.5a.5.5 0 0 1 .5-.5zM4 3v10a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V3H4zm2.5 2a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0v-5a.5.5 0 0 1 .5-.5zm3 0a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0v-5a.5.5 0 0 1 .5-.5z"/>
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z"/>
+  </svg>
+);
+
+const ReopenIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+    <path d="M8 1.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H6a.5.5 0 0 1 0-1h1.5V2a.5.5 0 0 1 .5-.5z"/>
+  </svg>
+);
+
+// ── Reply card ────────────────────────────────────────────────────────────────
+function ReplyCard({
+  reply,
+  isLead,
+  threadId,
+  showMarkdown,
+}: {
+  reply:        Reply;
+  isLead:       boolean;
+  threadId:     string;
+  showMarkdown: boolean;
+}) {
+  const [editing, setEditing]   = useState(false);
+  const [editVal, setEditVal]   = useState(reply.body);
+  const editRef = useRef<HTMLTextAreaElement>(null);
+
+  // Keep editVal in sync if thread is refreshed from host
+  useEffect(() => { setEditVal(reply.body); }, [reply.body]);
+
+  const startEdit = () => {
+    setEditVal(reply.body);
+    setEditing(true);
+    requestAnimationFrame(() => editRef.current?.focus());
+  };
+
+  const saveEdit = () => {
+    const trimmed = editVal.trim();
+    if (!trimmed || trimmed === reply.body) { setEditing(false); return; }
+    post({ type: 'editReply', threadId, replyId: reply.id, body: trimmed });
+    setEditing(false);
+  };
+
+  const cancelEdit = () => {
+    setEditVal(reply.body);
+    setEditing(false);
+  };
+
+  const handleEditKey = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); saveEdit(); }
+    if (e.key === 'Escape') cancelEdit();
+  };
+
+  const initial = reply.author_type === 'ai' ? 'AI' : 'You';
+
+  return (
+    <div className={`reply-card ${isLead ? 'reply-lead' : ''}`}>
+      <div className="reply-avatar" aria-hidden="true">{initial}</div>
+      <div className="reply-content">
+        {editing ? (
+          <>
+            <textarea
+              ref={editRef}
+              className="edit-textarea"
+              value={editVal}
+              onChange={e => setEditVal(e.target.value)}
+              onKeyDown={handleEditKey}
+              rows={4}
+              spellCheck
+            />
+            <div className="edit-actions">
+              <button className="btn btn-ghost btn-sm" onClick={cancelEdit}>Cancel</button>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={saveEdit}
+                disabled={!editVal.trim() || editVal.trim() === reply.body}
+              >
+                Save edit
+              </button>
+            </div>
+          </>
+        ) : (
+          <div
+            className="reply-body"
+            dangerouslySetInnerHTML={
+              showMarkdown
+                ? renderMarkdown(reply.body)
+                : { __html: escapeHtml(reply.body).replace(/\n/g, '<br>') }
+            }
+          />
+        )}
+        <div className="reply-meta">
+          {reply.edited_at && <span className="edited-tag">edited</span>}
+          <span>{relativeTime(reply.created_at)}</span>
+          {!editing && (
+            <button className="icon-btn" onClick={startEdit} title="Edit reply">
+              <EditIcon />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
   const [anchor, setAnchor]               = useState<ThreadAnchor | null>(null);
   const [thread, setThread]               = useState<Thread | null>(null);
   const [body, setBody]                   = useState('');
-  const [showPreview, setShowPreview]     = useState(false);
+  const [showMarkdown, setShowMarkdown]   = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // ── Message listener ───────────────────────────────────────────────
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       const msg = event.data as HostMessage;
-
       if (msg.type === 'openThreadPanel') {
         setAnchor(msg.anchor);
         setThread(msg.existingThread ?? null);
         setBody('');
-        setShowPreview(false);
+        setShowMarkdown(false);
         setConfirmDelete(false);
-        // Focus textarea after React re-renders
         requestAnimationFrame(() => textareaRef.current?.focus());
       }
-
       if (msg.type === 'threadSaved') {
         setThread(msg.thread);
         setBody('');
         setConfirmDelete(false);
       }
     };
-
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
   }, []);
 
-  // ── Actions ────────────────────────────────────────────────────────
   const handleSave = useCallback(() => {
     const trimmed = body.trim();
     if (!trimmed || !anchor) { return; }
-
     if (thread) {
       post({ type: 'addReply', threadId: thread.id, body: trimmed });
     } else {
@@ -137,7 +249,6 @@ export default function App() {
   const handleResolve = () => {
     if (!thread) { return; }
     post({ type: 'resolveThread', threadId: thread.id });
-    // Optimistic update
     setThread(prev => prev
       ? { ...prev, status: prev.status === 'resolved' ? 'open' : 'resolved' }
       : null,
@@ -148,65 +259,97 @@ export default function App() {
     if (!thread) { return; }
     if (!confirmDelete) { setConfirmDelete(true); return; }
     post({ type: 'deleteThread', threadId: thread.id });
-    // Panel will be closed by the extension host after delete
   };
 
   const handleCancel = () => {
-    if (body.trim()) {
-      setBody('');
-    } else {
-      post({ type: 'cancelThread' });
-    }
+    if (body.trim()) { setBody(''); } else { post({ type: 'cancelThread' }); }
   };
 
-  // ── Render ─────────────────────────────────────────────────────────
   if (!anchor) {
-    return <div className="loading">Initialising…</div>;
+    return (
+      <div className="loading">
+        <div className="loading-spinner" />
+        <span>Loading thread…</span>
+      </div>
+    );
   }
 
-  const locationLabel = `${anchor.file_path}:${anchor.line_start}${
-    anchor.line_end !== anchor.line_start ? `–${anchor.line_end}` : ''
-  }`;
-
-  const replyPlaceholder = thread
-    ? 'Add a reply… (Markdown supported)'
-    : 'Add a note, decision, or question… (Markdown supported)';
+  const fileLabel   = basename(anchor.file_path);
+  const lineLabel   = anchor.line_end !== anchor.line_start
+    ? `${anchor.line_start}–${anchor.line_end}`
+    : `${anchor.line_start}`;
+  const isOrphaned  = thread?.status === 'orphaned';
+  const isResolved  = thread?.status === 'resolved';
 
   return (
     <div className="panel">
+
+      {/* ── Orphaned banner ── */}
+      {isOrphaned && (
+        <div className="orphan-banner">
+          <span className="orphan-icon">⚠</span>
+          <span>This thread is orphaned — its code has changed. Re-attach it from the sidebar.</span>
+        </div>
+      )}
+
       {/* ── Header ── */}
       <div className="header">
-        <span className="location">{locationLabel}</span>
+        <div className="header-left">
+          <span className="file-icon">📄</span>
+          <div className="header-path">
+            <span className="file-name">{fileLabel}</span>
+            <span className="file-rest">
+              {anchor.file_path.includes('/') ? ' · ' + anchor.file_path.split('/').slice(0, -1).join('/') : ''}
+            </span>
+          </div>
+          <span className="line-badge">:{lineLabel}</span>
+        </div>
         {thread && (
-          <span className={`badge badge-${thread.status}`}>{thread.status}</span>
+          <span className={`status-badge status-${thread.status}`}>
+            {thread.status}
+          </span>
         )}
       </div>
 
-      {/* ── Existing replies ── */}
+      {/* ── Anchored code context ── */}
+      {anchor.anchored_code && (
+        <div className="code-context">
+          <div className="code-context-label">Anchored code</div>
+          <pre className="code-block"><code>{anchor.anchored_code}</code></pre>
+        </div>
+      )}
+
+      {/* ── Replies ── */}
       {thread && thread.replies.length > 0 && (
         <div className="replies">
           {thread.replies.map((reply, i) => (
-            <div key={reply.id} className={`reply ${i === 0 ? 'reply-lead' : ''}`}>
-              <div
-                className="reply-body"
-                dangerouslySetInnerHTML={
-                  showPreview
-                    ? renderMarkdown(reply.body)
-                    : { __html: escapeHtml(reply.body).replace(/\n/g, '<br>') }
-                }
-              />
-              <div className="reply-meta">
-                {reply.edited_at ? 'edited · ' : ''}
-                {relativeTime(reply.created_at)}
-              </div>
-            </div>
+            <ReplyCard
+              key={reply.id}
+              reply={reply}
+              isLead={i === 0}
+              threadId={thread.id}
+              showMarkdown={showMarkdown}
+            />
           ))}
         </div>
       )}
 
-      {/* ── Compose area ── */}
+      {/* ── Compose ── */}
       <div className="compose">
-        {showPreview && body ? (
+        <div className="compose-header">
+          <span className="compose-label">
+            {thread ? 'Add a reply' : 'New thread'}
+          </span>
+          <button
+            className={`toggle-btn ${showMarkdown ? 'toggle-active' : ''}`}
+            onClick={() => setShowMarkdown(p => !p)}
+            title="Toggle Markdown preview"
+          >
+            {showMarkdown ? 'Edit' : 'Preview'}
+          </button>
+        </div>
+
+        {showMarkdown && body ? (
           <div
             className="preview-pane"
             dangerouslySetInnerHTML={renderMarkdown(body)}
@@ -214,73 +357,67 @@ export default function App() {
         ) : (
           <textarea
             ref={textareaRef}
-            className="input"
+            className="compose-textarea"
             value={body}
             onChange={e => setBody(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={replyPlaceholder}
-            rows={5}
+            placeholder={thread ? 'Add a reply… (Markdown supported)' : 'Add a note, decision, or question… (Markdown supported)'}
+            rows={4}
             spellCheck
           />
         )}
 
-        {/* ── Toolbar ── */}
-        <div className="toolbar">
-          <button
-            className="btn btn-ghost"
-            onClick={() => setShowPreview(p => !p)}
-            title="Toggle Markdown preview"
-          >
-            {showPreview ? 'Edit' : 'Preview'}
-          </button>
-
-          <div className="spacer" />
-
-          {thread ? (
-            <>
-              {confirmDelete ? (
-                <>
-                  <span className="confirm-label">Delete this thread?</span>
-                  <button className="btn btn-ghost" onClick={() => setConfirmDelete(false)}>No</button>
-                  <button className="btn btn-danger" onClick={handleDelete}>Yes, delete</button>
-                </>
-              ) : (
-                <button className="btn btn-ghost" onClick={handleDelete} title="Delete thread">
-                  Delete
+        {/* ── Actions ── */}
+        {confirmDelete ? (
+          <div className="confirm-row">
+            <span className="confirm-text">Permanently delete this thread?</span>
+            <button className="btn btn-ghost btn-sm" onClick={() => setConfirmDelete(false)}>Cancel</button>
+            <button className="btn btn-danger btn-sm" onClick={handleDelete}>Delete</button>
+          </div>
+        ) : (
+          <div className="toolbar">
+            {thread ? (
+              <>
+                <button
+                  className="btn btn-ghost btn-sm btn-icon"
+                  onClick={handleDelete}
+                  title="Delete thread"
+                >
+                  <TrashIcon /> Delete
                 </button>
-              )}
-              {!confirmDelete && (
-                <>
-                  <button className="btn btn-ghost" onClick={handleResolve}>
-                    {thread.status === 'resolved' ? 'Reopen' : 'Resolve'}
-                  </button>
-                  <button
-                    className="btn btn-primary"
-                    onClick={handleSave}
-                    disabled={!body.trim()}
-                    title="Save reply (⌘↵)"
-                  >
-                    Reply <kbd>⌘↵</kbd>
-                  </button>
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              <button className="btn btn-ghost" onClick={handleCancel}>
-                Cancel
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={handleSave}
-                disabled={!body.trim()}
-                title="Save thread (⌘↵)"
-              >
-                Save <kbd>⌘↵</kbd>
-              </button>
-            </>
-          )}
-        </div>
+                <div className="toolbar-spacer" />
+                <button
+                  className={`btn btn-sm btn-icon ${isResolved ? 'btn-secondary' : 'btn-ghost'}`}
+                  onClick={handleResolve}
+                  title={isResolved ? 'Reopen thread' : 'Mark as resolved'}
+                >
+                  {isResolved ? <><ReopenIcon /> Reopen</> : <><CheckIcon /> Resolve</>}
+                </button>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={handleSave}
+                  disabled={!body.trim()}
+                  title="Save reply (⌘↵ / Ctrl+↵)"
+                >
+                  Reply <kbd>⌘↵</kbd>
+                </button>
+              </>
+            ) : (
+              <>
+                <button className="btn btn-ghost btn-sm" onClick={handleCancel}>Cancel</button>
+                <div className="toolbar-spacer" />
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={handleSave}
+                  disabled={!body.trim()}
+                  title="Save thread (⌘↵ / Ctrl+↵)"
+                >
+                  Save <kbd>⌘↵</kbd>
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

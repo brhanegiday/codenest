@@ -47,6 +47,7 @@ export type HostMessage =
 export type WebviewMessage =
   | { type: 'createThread'; anchor: ThreadAnchor; body: string }
   | { type: 'addReply';     threadId: string; body: string }
+  | { type: 'editReply';    threadId: string; replyId: string; body: string }
   | { type: 'resolveThread'; threadId: string }
   | { type: 'deleteThread'; threadId: string }
   | { type: 'searchQuery';  query: string; status?: ThreadStatus }

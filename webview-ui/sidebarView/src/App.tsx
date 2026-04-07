@@ -1,63 +1,102 @@
 import { useState, useEffect } from 'react';
-import { Thread, ThreadStatus, relativeTime, basename } from './types';
+import { Thread, relativeTime, basename } from './types';
 import './App.css';
 
 declare function acquireVsCodeApi(): { postMessage(msg: unknown): void };
 const vscode = acquireVsCodeApi();
 
 type HostMessage =
-  | { type: 'allThreads'; threads: Thread[] }
-  | { type: 'reattachMode'; threadId: string };
+  | { type: 'allThreads'; threads: Thread[] };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function preview(thread: Thread, maxLen = 60): string {
+function preview(thread: Thread, maxLen = 72): string {
   const body = thread.replies[0]?.body ?? '';
   return body.length > maxLen ? body.slice(0, maxLen) + '…' : body;
 }
 
+// ── Empty state ───────────────────────────────────────────────────────────────
+function EmptyState() {
+  return (
+    <div className="empty-state">
+      <div className="empty-icon" aria-hidden="true">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <line x1="9" y1="10" x2="15" y2="10"/>
+          <line x1="9" y1="14" x2="13" y2="14"/>
+        </svg>
+      </div>
+      <p className="empty-title">No threads yet</p>
+      <p className="empty-hint">Select code in the editor and press<br/><kbd>Ctrl+Shift+N</kbd> to add a thread.</p>
+    </div>
+  );
+}
+
 // ── Thread row ────────────────────────────────────────────────────────────────
-function ThreadRow({ thread, onNavigate, onReattach }: {
-  thread:     Thread;
-  onNavigate: (t: Thread) => void;
+function ThreadRow({
+  thread,
+  onNavigate,
+  onReattach,
+}: {
+  thread:      Thread;
+  onNavigate:  (t: Thread) => void;
   onReattach?: (t: Thread) => void;
 }) {
+  const isOrphaned = thread.status === 'orphaned';
+
   return (
-    <div className="thread-row" onClick={() => onNavigate(thread)}>
+    <div
+      className={`thread-row ${isOrphaned ? 'thread-row-orphaned' : ''}`}
+      onClick={() => onNavigate(thread)}
+      title={thread.anchor.file_path}
+    >
       <div className="thread-row-top">
-        <span className="file-name">{basename(thread.anchor.file_path)}</span>
-        <span className="line-num">:{thread.anchor.line_start}</span>
-        <span className="thread-time">{relativeTime(thread.updated_at)}</span>
+        <span className="row-file">{basename(thread.anchor.file_path)}</span>
+        <span className="row-line">:{thread.anchor.line_start}</span>
+        <span className="row-time">{relativeTime(thread.updated_at)}</span>
       </div>
-      <div className="thread-preview">{preview(thread)}</div>
-      {thread.status === 'orphaned' && onReattach && (
+      <div className="thread-row-preview">{preview(thread)}</div>
+      {isOrphaned && onReattach && (
         <button
-          className="btn-reattach"
+          className="reattach-btn"
           onClick={e => { e.stopPropagation(); onReattach(thread); }}
+          title="Re-attach this orphaned thread to new code"
         >
-          Re-attach
+          ↩ Re-attach
         </button>
       )}
     </div>
   );
 }
 
-// ── Section ───────────────────────────────────────────────────────────────────
-function Section({ title, count, defaultOpen = true, accent, children }: {
-  title: string; count: number; defaultOpen?: boolean;
-  accent?: string; children: React.ReactNode;
+// ── Collapsible section ───────────────────────────────────────────────────────
+function Section({
+  title,
+  count,
+  accent,
+  defaultOpen = true,
+  children,
+}: {
+  title:        string;
+  count:        number;
+  accent?:      string;
+  defaultOpen?: boolean;
+  children:     React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  if (count === 0) return null;
+  if (count === 0) { return null; }
+
   return (
     <div className="section">
       <button
         className="section-header"
-        style={accent ? { color: accent } : undefined}
         onClick={() => setOpen(o => !o)}
+        style={accent ? { '--accent': accent } as React.CSSProperties : undefined}
       >
-        <span className="chevron">{open ? '▾' : '▸'}</span>
-        {title}
-        <span className="section-count">{count}</span>
+        <span className={`chevron ${open ? 'chevron-open' : ''}`}>›</span>
+        <span className="section-title" style={accent ? { color: accent } : undefined}>
+          {title}
+        </span>
+        <span className="section-badge">{count}</span>
       </button>
       {open && <div className="section-body">{children}</div>}
     </div>
@@ -72,7 +111,7 @@ export default function App() {
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       const msg = event.data as HostMessage;
-      if (msg.type === 'allThreads') setThreads(msg.threads);
+      if (msg.type === 'allThreads') { setThreads(msg.threads); }
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
@@ -89,37 +128,41 @@ export default function App() {
   const orphaned = active.filter(t => t.status === 'orphaned');
   const resolved = active.filter(t => t.status === 'resolved');
 
-  const total    = active.length;
-
   return (
     <div className="sidebar">
+
       {/* ── Stats bar ── */}
       <div className="stats-bar">
-        <span className="stat"><span className="stat-num">{open.length}</span> open</span>
-        <span className="stat-sep">·</span>
-        <span className="stat"><span className="stat-num">{resolved.length}</span> resolved</span>
+        <span className="stat-item">
+          <span className="stat-dot stat-dot-open" />
+          <span className="stat-num">{open.length}</span> open
+        </span>
+        <span className="stat-sep" />
+        <span className="stat-item">
+          <span className="stat-dot stat-dot-resolved" />
+          <span className="stat-num">{resolved.length}</span> resolved
+        </span>
         {orphaned.length > 0 && (
           <>
-            <span className="stat-sep">·</span>
-            <span className="stat stat-warn">
+            <span className="stat-sep" />
+            <span className="stat-item stat-warn">
+              <span className="stat-dot stat-dot-orphaned" />
               <span className="stat-num">{orphaned.length}</span> orphaned
             </span>
           </>
         )}
       </div>
 
-      {total === 0 && (
-        <div className="empty-state">
-          No threads yet. Select code and press <kbd>Ctrl+Shift+N</kbd> to add one.
-        </div>
-      )}
+      {/* ── Empty state ── */}
+      {active.length === 0 && <EmptyState />}
 
-      {/* ── Orphaned (always first, always visible) ── */}
+      {/* ── Orphaned (highest priority, always open) ── */}
       {orphaned.length > 0 && (
         <Section
           title="Orphaned"
           count={orphaned.length}
           accent="var(--vscode-editorWarning-foreground, #cca700)"
+          defaultOpen
         >
           {orphaned.map(t => (
             <ThreadRow key={t.id} thread={t} onNavigate={navigate} onReattach={reattach} />
@@ -139,11 +182,11 @@ export default function App() {
         </Section>
       )}
 
-      {/* ── Footer controls ── */}
+      {/* ── Footer ── */}
       {resolved.length > 0 && (
         <div className="footer">
-          <button className="btn-toggle" onClick={() => setHideResolved(h => !h)}>
-            {hideResolved ? 'Show resolved' : 'Hide resolved'}
+          <button className="toggle-link" onClick={() => setHideResolved(h => !h)}>
+            {hideResolved ? '↓ Show resolved' : '↑ Hide resolved'}
           </button>
         </div>
       )}

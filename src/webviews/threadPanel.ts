@@ -67,6 +67,19 @@ export class ThreadPanelProvider {
             break;
           }
 
+          case 'editReply': {
+            threadMgr.editReply(
+              msg.threadId as string,
+              msg.replyId  as string,
+              msg.body     as string,
+            );
+            const updated = threadMgr.getThread(msg.threadId as string);
+            if (updated) {
+              panel.webview.postMessage({ type: 'threadSaved', thread: updated });
+            }
+            break;
+          }
+
           case 'resolveThread':
             threadMgr.toggleStatus(msg.threadId as string);
             break;

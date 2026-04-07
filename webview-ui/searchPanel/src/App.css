@@ -8,64 +8,155 @@ body {
   line-height: 1.4;
 }
 
-.search-panel { display: flex; flex-direction: column; height: 100vh; }
+.search-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
 
-/* ── Search bar ── */
+/* ── Search bar ──────────────────────────────────────────────────── */
 .search-bar {
-  display: flex; align-items: center; gap: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0;
   padding: 8px 10px;
   border-bottom: 1px solid var(--vscode-panel-border, rgba(128,128,128,0.2));
+  position: relative;
 }
-.search-icon { color: var(--vscode-descriptionForeground); font-size: 15px; flex-shrink: 0; }
+.search-icon-wrap {
+  position: absolute;
+  left: 18px;
+  color: var(--vscode-descriptionForeground);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
 .search-input {
-  flex: 1; background: var(--vscode-input-background);
+  flex: 1;
+  background: var(--vscode-input-background);
   color: var(--vscode-input-foreground, inherit);
-  border: 1px solid var(--vscode-input-border, transparent);
-  border-radius: 3px; padding: 4px 6px;
-  font-family: inherit; font-size: inherit;
+  border: 1px solid var(--vscode-input-border, rgba(128,128,128,0.3));
+  border-radius: 4px;
+  padding: 5px 28px 5px 32px;
+  font-family: inherit;
+  font-size: 13px;
   outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
 }
-.search-input:focus { border-color: var(--vscode-focusBorder, #007fd4); }
-.clear-btn {
-  background: none; border: none; cursor: pointer;
-  color: var(--vscode-descriptionForeground); font-size: 11px; padding: 2px 4px;
-  border-radius: 2px;
+.search-input:focus {
+  border-color: var(--vscode-focusBorder, #007fd4);
+  box-shadow: 0 0 0 1px var(--vscode-focusBorder, #007fd4);
 }
-.clear-btn:hover { background: var(--vscode-toolbar-hoverBackground, rgba(128,128,128,0.15)); }
+.search-input::placeholder { color: var(--vscode-input-placeholderForeground, rgba(128,128,128,0.7)); }
 
-/* ── Filter tabs ── */
+.clear-btn {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--vscode-descriptionForeground);
+  font-size: 11px;
+  padding: 3px 5px;
+  border-radius: 3px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  transition: background 0.1s, color 0.1s;
+}
+.clear-btn:hover {
+  background: var(--vscode-toolbar-hoverBackground, rgba(128,128,128,0.15));
+  color: var(--vscode-editor-foreground);
+}
+
+/* ── Filter tabs ─────────────────────────────────────────────────── */
 .filter-tabs {
   display: flex;
   border-bottom: 1px solid var(--vscode-panel-border, rgba(128,128,128,0.2));
+  flex-shrink: 0;
 }
 .tab {
-  flex: 1; padding: 5px 2px;
-  background: none; border: none; cursor: pointer;
-  font-family: inherit; font-size: 11px;
+  flex: 1;
+  padding: 6px 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
   color: var(--vscode-descriptionForeground);
   border-bottom: 2px solid transparent;
   transition: color 0.1s, border-color 0.1s;
+  font-weight: 500;
 }
 .tab:hover { color: var(--vscode-editor-foreground); }
 .tab-active {
   color: var(--vscode-button-background, #0078d4);
   border-bottom-color: var(--vscode-button-background, #0078d4);
+  font-weight: 700;
+}
+
+/* ── Results area ────────────────────────────────────────────────── */
+.results {
+  flex: 1;
+  overflow-y: auto;
+}
+.results::-webkit-scrollbar { width: 4px; }
+.results::-webkit-scrollbar-track { background: transparent; }
+.results::-webkit-scrollbar-thumb { background: var(--vscode-scrollbarSlider-background, rgba(128,128,128,0.3)); border-radius: 2px; }
+
+.results-count {
+  padding: 5px 12px;
+  font-size: 10px;
   font-weight: 600;
-}
-
-/* ── Results ── */
-.results { flex: 1; overflow-y: auto; }
-
-.empty-state {
-  padding: 20px 16px; text-align: center;
-  color: var(--vscode-descriptionForeground); font-size: 12px; line-height: 1.6;
-}
-
-.result-row {
-  padding: 7px 12px 8px; cursor: pointer;
-  border-left: 3px solid transparent;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vscode-descriptionForeground);
   border-bottom: 1px solid var(--vscode-panel-border, rgba(128,128,128,0.1));
-  transition: background 0.1s, border-color 0.1s;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 36px 20px;
+  text-align: center;
+}
+.empty-icon {
+  color: var(--vscode-descriptionForeground);
+  opacity: 0.35;
+}
+.empty-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vscode-editor-foreground);
+}
+.empty-hint {
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+  line-height: 1.7;
+}
+kbd {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 11px;
+  background: var(--vscode-keybindingLabel-background, rgba(128,128,128,0.12));
+  border: 1px solid var(--vscode-keybindingLabel-border, rgba(128,128,128,0.4));
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--vscode-editor-foreground);
+}
+
+/* ── Result row ──────────────────────────────────────────────────── */
+.result-row {
+  padding: 8px 12px 9px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--vscode-panel-border, rgba(128,128,128,0.08));
+  transition: background 0.1s, border-left-color 0.1s;
+  user-select: none;
 }
 .result-row:hover {
   background: var(--vscode-list-hoverBackground);
@@ -73,21 +164,69 @@ body {
 }
 
 .result-top {
-  display: flex; align-items: center; gap: 4px; margin-bottom: 3px; flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 4px;
 }
-.file-name { font-weight: 600; font-size: 12px; }
-.line-num { font-size: 11px; color: var(--vscode-descriptionForeground); }
-.result-time { font-size: 10px; color: var(--vscode-descriptionForeground); margin-left: auto; }
-.result-preview {
-  font-size: 12px; color: var(--vscode-descriptionForeground);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.result-file {
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+.result-line {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+  flex-shrink: 0;
+  font-family: var(--vscode-editor-font-family, monospace);
+  margin-right: 6px;
+}
+.result-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.result-time {
+  font-size: 10px;
+  color: var(--vscode-descriptionForeground);
+  white-space: nowrap;
 }
 
-/* ── Status badges ── */
+.result-preview {
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+}
+
+.result-replies {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+}
+
+/* ── Status badges ───────────────────────────────────────────────── */
 .badge {
-  font-size: 9px; padding: 1px 6px; border-radius: 8px;
-  font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .badge-open     { background: var(--vscode-button-background, #0078d4);        color: var(--vscode-button-foreground, #fff); }
-.badge-resolved { background: var(--vscode-disabledForeground, #6c6c6c);       color: var(--vscode-button-foreground, #fff); opacity: 0.8; }
-.badge-orphaned { background: var(--vscode-editorWarning-foreground, #cca700); color: var(--vscode-editor-background, #1e1e1e); }
+.badge-resolved { background: var(--vscode-disabledForeground, rgba(100,100,100,0.35)); color: var(--vscode-editor-foreground); }
+.badge-orphaned { background: var(--vscode-editorWarning-foreground, #cca700); color: #000; }

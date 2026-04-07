@@ -70,6 +70,21 @@ export class ThreadManager {
     this.onMutation?.();
   }
 
+  // ── edit reply ────────────────────────────────────────────────────
+  editReply(threadId: string, replyId: string, body: string): void {
+    const store  = this.storage.load();
+    const thread = store.threads.find(t => t.id === threadId);
+    if (!thread) { return; }
+    const reply  = thread.replies.find(r => r.id === replyId);
+    if (!reply)  { return; }
+    reply.body      = body;
+    reply.edited_at = new Date().toISOString();
+    thread.updated_at = reply.edited_at;
+    this.storage.save(store);
+    this.searchIndex.upsert(thread);
+    this.onMutation?.();
+  }
+
   // ── resolve / reopen ──────────────────────────────────────────────
   toggleStatus(threadId: string): void {
     const store  = this.storage.load();
@@ -114,8 +129,9 @@ export class ThreadManager {
   handleWebviewMessage(msg: WebviewMessage): void {
     switch (msg.type) {
       case 'createThread':   this.createThread(msg.anchor, msg.body);           break;
-      case 'addReply':       this.addReply(msg.threadId, msg.body);             break;
-      case 'resolveThread':  this.toggleStatus(msg.threadId);                   break;
+      case 'addReply':       this.addReply(msg.threadId, msg.body);                       break;
+      case 'editReply':      this.editReply(msg.threadId, msg.replyId, msg.body);         break;
+      case 'resolveThread':  this.toggleStatus(msg.threadId);                             break;
       case 'deleteThread':   this.deleteThread(msg.threadId);                   break;
       case 'reattachThread': this.reattachThread(msg.threadId, msg.newAnchor);  break;
       case 'searchQuery':    /* handled by SearchIndex directly */               break;
