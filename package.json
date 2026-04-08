@@ -2,7 +2,7 @@
     "name": "brana",
     "displayName": "Brana",
     "description": "The parchment for your code — permanent, searchable knowledge anchored to every line.",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "publisher": "brhanegiday",
     "license": "MIT",
     "repository": {

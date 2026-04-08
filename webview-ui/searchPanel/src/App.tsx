@@ -14,16 +14,16 @@ const STATUS_TABS: { label: string; value: StatusFilter }[] = [
   { label: 'Orphaned', value: 'orphaned' },
 ];
 
-// ── Search icon ───────────────────────────────────────────────────────────────
+// ── Icons ─────────────────────────────────────────────────────────────────────
 const SearchIcon = () => (
   <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
     <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
   </svg>
 );
 
-// ── Status badge ──────────────────────────────────────────────────────────────
-function StatusBadge({ status }: { status: ThreadStatus }) {
-  return <span className={`badge badge-${status}`}>{status}</span>;
+// ── Status pill ───────────────────────────────────────────────────────────────
+function StatusPill({ status }: { status: ThreadStatus }) {
+  return <span className={`status-pill pill-${status}`}>{status}</span>;
 }
 
 // ── Empty state ───────────────────────────────────────────────────────────────
@@ -32,12 +32,14 @@ function EmptyState({ query }: { query: string }) {
     return (
       <div className="empty-state">
         <div className="empty-icon" aria-hidden="true">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="1.2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
             <line x1="8" y1="11" x2="14" y2="11"/>
           </svg>
         </div>
-        <p className="empty-title">No matches for "{query}"</p>
+        <p className="empty-title">No results for "{query}"</p>
         <p className="empty-hint">Try a different keyword or clear the filter.</p>
       </div>
     );
@@ -45,8 +47,10 @@ function EmptyState({ query }: { query: string }) {
   return (
     <div className="empty-state">
       <div className="empty-icon" aria-hidden="true">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" strokeWidth="1.2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
       </div>
       <p className="empty-title">No threads yet</p>
@@ -60,29 +64,42 @@ function ResultRow({ thread }: { thread: Thread }) {
   const navigate = () =>
     vscode.postMessage({ type: 'navigateToThread', threadId: thread.id });
 
-  const body    = thread.replies[0]?.body ?? '';
-  const preview = body.length > 90 ? body.slice(0, 90) + '…' : body;
+  const body      = thread.replies[0]?.body ?? '';
+  const preview   = body.length > 100 ? body.slice(0, 100) + '…' : body;
   const replyCount = thread.replies.length;
 
   return (
-    <div className="result-row" onClick={navigate} title={thread.anchor.file_path}>
-      <div className="result-top">
-        <span className="result-file">{basename(thread.anchor.file_path)}</span>
-        <span className="result-line">:{thread.anchor.line_start}</span>
-        <div className="result-right">
-          <StatusBadge status={thread.status} />
-          <span className="result-time">{relativeTime(thread.updated_at)}</span>
+    <div
+      className={`result-row status-${thread.status}`}
+      onClick={navigate}
+      title={thread.anchor.file_path}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => e.key === 'Enter' && navigate()}
+    >
+      <div className={`result-indicator indicator-${thread.status}`} />
+
+      <div className="result-content">
+        <div className="result-top">
+          <span className="result-file">{basename(thread.anchor.file_path)}</span>
+          <span className="result-line">:{thread.anchor.line_start}</span>
+          <div className="result-right">
+            <StatusPill status={thread.status} />
+            <span className="result-time">{relativeTime(thread.updated_at)}</span>
+          </div>
         </div>
+
+        {preview && <div className="result-preview">{preview}</div>}
+
+        {replyCount > 1 && (
+          <div className="result-replies">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" style={{ opacity: 0.55 }}>
+              <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-2.5a2 2 0 0 0-1.6.8L8 14.333 6.1 11.8a2 2 0 0 0-1.6-.8H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12z"/>
+            </svg>
+            {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+          </div>
+        )}
       </div>
-      <div className="result-preview">{preview}</div>
-      {replyCount > 1 && (
-        <div className="result-replies">
-          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style={{ opacity: 0.6 }}>
-            <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v2.5H14a.5.5 0 0 1 .354.854l-2.5 2.5a.5.5 0 0 1-.708 0l-2.5-2.5A.5.5 0 0 1 8.5 7.5H10V5h-5v-.5A1.5 1.5 0 0 1 6.5 3h-1.5A2.5 2.5 0 0 0 2.5 5.5v7A2.5 2.5 0 0 0 5 15h6a2.5 2.5 0 0 0 2.5-2.5V11h-1v1.5A1.5 1.5 0 0 1 11 14H5a1.5 1.5 0 0 1-1.5-1.5v-7A1.5 1.5 0 0 1 5 4v-.5z"/>
-          </svg>
-          {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
-        </div>
-      )}
     </div>
   );
 }
@@ -93,6 +110,7 @@ export default function App() {
   const [filter,  setFilter]  = useState<StatusFilter>('all');
   const [results, setResults] = useState<Thread[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef    = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handler = (event: MessageEvent) => {
@@ -130,6 +148,7 @@ export default function App() {
   const clearQuery = () => {
     setQuery('');
     fireSearch('', filter);
+    inputRef.current?.focus();
   };
 
   useEffect(() => { fireSearch('', 'all'); }, [fireSearch]);
@@ -139,10 +158,9 @@ export default function App() {
 
       {/* ── Search bar ── */}
       <div className="search-bar">
-        <span className="search-icon-wrap" aria-hidden="true">
-          <SearchIcon />
-        </span>
+        <span className="search-icon" aria-hidden="true"><SearchIcon /></span>
         <input
+          ref={inputRef}
           className="search-input"
           type="text"
           placeholder="Search threads…"
@@ -153,9 +171,7 @@ export default function App() {
           aria-label="Search threads"
         />
         {query && (
-          <button className="clear-btn" onClick={clearQuery} title="Clear search" aria-label="Clear search">
-            ✕
-          </button>
+          <button className="clear-btn" onClick={clearQuery} aria-label="Clear search">×</button>
         )}
       </div>
 
@@ -166,7 +182,7 @@ export default function App() {
             key={tab.value}
             role="tab"
             aria-selected={filter === tab.value}
-            className={`tab ${filter === tab.value ? 'tab-active' : ''}`}
+            className={`tab ${filter === tab.value ? 'tab-active' : ''} tab-${tab.value}`}
             onClick={() => handleFilterChange(tab.value)}
           >
             {tab.label}
@@ -180,7 +196,7 @@ export default function App() {
           <EmptyState query={query} />
         ) : (
           <>
-            <div className="results-count">
+            <div className="results-header">
               {results.length} {results.length === 1 ? 'result' : 'results'}
             </div>
             {results.map(t => <ResultRow key={t.id} thread={t} />)}
